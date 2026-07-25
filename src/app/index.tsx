@@ -1,17 +1,27 @@
-import { StyleSheet, Text, View } from "react-native";
+import Categories from "@/components/home/Categories";
+import Popular from "@/components/home/Popular";
+import Searchbar from "@/components/home/Searchbar";
+import { ScrollView, StyleSheet } from "react-native";
 
 export default function Index() {
   return (
-    <View style={styles.container}>
-      <Text>hello react native</Text>
-    </View>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
+      <Searchbar />
+      <Categories />
+      <Popular />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
 });
