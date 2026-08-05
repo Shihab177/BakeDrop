@@ -1,47 +1,36 @@
-import {
-  category_image_four,
-  category_image_one,
-  category_image_three,
-  category_image_two,
-} from "@/assets/index";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   FlatList,
   ImageBackground,
-  ImageSourcePropType,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 type TCategory = {
-  id: string;
+  _id: string;
+  name: string;
   title: string;
-  image: ImageSourcePropType;
+  image: string;
 };
 type TCategories = TCategory[];
-export const categories: TCategories = [
-  {
-    id: "3",
-    title: "Birthday",
 
-    image: category_image_three,
-  },
-  {
-    id: "1",
-    title: "Holiday",
-    image: category_image_one,
-  },
-  {
-    id: "4",
-    title: "Birthday",
-    image: category_image_four,
-  },
-  {
-    id: "2",
-    title: "Wedding",
-    image: category_image_two,
-  },
-];
 const Categories = () => {
+  const [categories, setCategories] = useState<TCategories>([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3160/api/v1/categories",
+        );
+        setCategories(response.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
@@ -50,14 +39,17 @@ const Categories = () => {
       </View>
       <FlatList<TCategory>
         data={categories}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item?._id}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8 }}
         renderItem={({ item }) => (
-          <ImageBackground source={item.image} style={styles.cardImage}>
+          <ImageBackground
+            source={{ uri: item?.image }}
+            style={styles.cardImage}
+          >
             <View style={styles.overlay}>
-              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.title}>{item?.name}</Text>
             </View>
           </ImageBackground>
         )}
