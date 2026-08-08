@@ -1,67 +1,63 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
 import {
-    popular_image_five,
-    popular_image_four,
-    popular_image_one,
-    popular_image_three,
-    popular_image_two,
-} from "@/assets/index";
-import {
-    FlatList,
-    Image,
-    ImageSourcePropType,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
 } from "react-native";
-type TPopularItem = {
-  id: string;
+type TPopularCakes = {
+  _id: string;
   title: string;
   description: string;
-  image: ImageSourcePropType;
+  categoryId: string;
+  images: string[];
+  ingredients: string[];
+  reviewId?: string | null;
+  price: number;
+  qty: number;
 };
-export const popularCakes: TPopularItem[] = [
-  {
-    id: "1",
-    title: "Rainbow cake",
-    description: "This impressive rainbow cake is the perfect...",
-    image: popular_image_one,
-  },
-  {
-    id: "2",
-    title: "Chocolate cake",
-    description: "A good chocolate cake can be enjoyed on just...",
-
-    image: popular_image_two,
-  },
-  {
-    id: "3",
-    title: "Mr. Lion cake",
-    description: "Cute little lion can make anyone happy on their...",
-    image: popular_image_three,
-  },
-  {
-    id: "94",
-    title: "Birthday cake",
-    description: "A good vanilla cake can be enjoyed on just...",
-    image: popular_image_four,
-  },
-  {
-    id: "64",
-    title: "Chocolate cake",
-    description: "A good chocolate cake can be enjoyed on just...",
-    image: popular_image_five,
-  },
-];
 const Popular = () => {
+  const [popularCakes, setPopularCakes] = useState<TPopularCakes[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => {
+    const controller = new AbortController();
+    const getPopularCakes = async () => {
+      try {
+        const response = await axios.get("http://localhost:3160/api/v1/cakes", {
+          signal: controller.signal,
+        });
+        setPopularCakes(response.data?.data || []);
+      } catch (error) {
+        if (!axios.isCancel(error)) {
+          console.error("API Error:", error);
+        }
+      }finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }}
+    };
+    getPopularCakes();
+    return () => controller.abort();
+  }, []);
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="small" color="#301F1F" />
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.sectionText}>POPULAR CAKES</Text>
       </View>
-      <FlatList<TPopularItem>
+      <FlatList<TPopularCakes>
         data={popularCakes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         numColumns={2}
         scrollEnabled={false}
         columnWrapperStyle={styles.columnWrapper}
@@ -69,7 +65,7 @@ const Popular = () => {
         renderItem={({ item }) => (
           <TouchableOpacity activeOpacity={0.8} style={styles.card}>
             <Image
-              source={item.image}
+              source={{ uri: item?.images?.[0] }}
               style={styles.cardImage}
               resizeMode="cover"
             />
@@ -89,6 +85,11 @@ const Popular = () => {
 export default Popular;
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    paddingVertical: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     marginHorizontal: 20,
     marginTop: 20,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   sectionText: {
     fontSize: 12,
     color: "#301F1F",
-    fontWeight: "medium",
+    fontWeight: "500",
     letterSpacing: 0.5,
   },
   columnWrapper: {
@@ -120,14 +121,14 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: "medium",
+    fontWeight: "500",
     color: "#301F1F",
     marginTop: 8,
   },
   cardDescription: {
     fontSize: 12,
     color: "#828282",
-    fontWeight: "regular",
+    fontWeight: "400",
     marginTop: 4,
     lineHeight: 16,
   },
